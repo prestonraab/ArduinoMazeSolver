@@ -23,7 +23,7 @@
 
 int main(int numFiles, char** files)
 {
-	//const char* fileIn = "/Users/Preston/Downloads/maze.bmp";
+    //const char* fileIn = "/Users/Preston/Downloads/maze.bmp";
     const char* fileIn;
     const char* fileOut;
     if(numFiles >= 2){
@@ -35,23 +35,23 @@ int main(int numFiles, char** files)
         fileIn = "/Users/prestonraab/Downloads/Fourth Maze.jpg";
         fileOut = "/Users/prestonraab/Desktop/new.bmp";
     }
-	//"/Users/Preston/MazeSolver/MazeSolver/BigMaze.bmp";
-	
-	bool useFileIn = true;
+    //"/Users/Preston/MazeSolver/MazeSolver/BigMaze.bmp";
+    
+    bool useFileIn = true;
     int thickness = 1;
     bool showCornersinPink = false;
     double searchRange = 200;
     float scaleBy = 1.0;
     
-	MazeRunner* runner;
-	
-	vector<vector<unsigned char> > greyMap;
-	vector<int> start;
-	vector<int> end;
+    MazeRunner* runner;
+    
+    vector<vector<unsigned char> > greyMap;
+    vector<int> start;
+    vector<int> end;
 
     vector<vector<bool> > map;
-	
-	if(useFileIn){
+    
+    if(useFileIn){
         string stringFileIn = string(fileIn);
         if(stringFileIn.back() == 'g'){
             int xres = 0, yres = 0;
@@ -82,41 +82,41 @@ int main(int numFiles, char** files)
             
             fileIn = "/Users/prestonraab/Desktop/interim.bmp";
         }
-		Campus campus(fileIn);
-		greyMap = campus.greyMap;
+        Campus campus(fileIn);
+        greyMap = campus.greyMap;
         MajorBlock::mapWidth = greyMap.at(0).size();
-		runner = new MazeRunner(campus);
-		start = vector<int>{campus.start[0], campus.start[1]};
-		end = vector<int>{campus.end[0], campus.end[1]};
+        runner = new MazeRunner(campus);
+        start = vector<int>{campus.start[0], campus.start[1]};
+        end = vector<int>{campus.end[0], campus.end[1]};
         map = campus.getMap();
-	}
-	else{
-		int mazeSize = 20;
-		Maze maze = Maze(mazeSize, mazeSize);
+    }
+    else{
+        int mazeSize = 20;
+        Maze maze = Maze(mazeSize, mazeSize);
         
         map = maze.getMap();
-		vector<vector<int> > startEnd = maze.getStartEnd();
-		
-		start = startEnd.at(0);
-		end = startEnd.at(1);
-		
+        vector<vector<int> > startEnd = maze.getStartEnd();
+        
+        start = startEnd.at(0);
+        end = startEnd.at(1);
+        
         MajorBlock::mapWidth = map.at(0).size();
         
-		runner = new MazeRunner(map, start, end);
-		
-		greyMap.reserve(map.size());
-	
-		for(int row = 0; row < map.size(); ++row){
-			greyMap.push_back(vector<unsigned char>() );
-			for(int col = 0; col < map[0].size(); ++col){
-				greyMap.at(row).push_back( (unsigned char)(map[row][col]) - 1);
-			}
-		}
+        runner = new MazeRunner(map, start, end);
         
-	}
-	
-	cout << "Start: (" << start.at(0) << ", " << start.at(1) << ")" << endl;
-	cout << "End: (" << end.at(0) << ", " << end.at(1) << ")" << endl;
+        greyMap.reserve(map.size());
+    
+        for(int row = 0; row < map.size(); ++row){
+            greyMap.push_back(vector<unsigned char>() );
+            for(int col = 0; col < map[0].size(); ++col){
+                greyMap.at(row).push_back( (unsigned char)(map[row][col]) - 1);
+            }
+        }
+        
+    }
+    
+    cout << "Start: (" << start.at(0) << ", " << start.at(1) << ")" << endl;
+    cout << "End: (" << end.at(0) << ", " << end.at(1) << ")" << endl;
     
     PathWriter* writer = new PathWriter(runner, fileOut, greyMap, start, end, thickness, runner->getHeight(), runner->getWidth());
     
@@ -130,12 +130,12 @@ int main(int numFiles, char** files)
         blackWhiteWriter->drawOnMap(startEndConnector, showCornersinPink);
     }
     blackWhiteWriter->encodeOneStep();
-	
+    
     bool solved = runner->solve();
-	
-	if(solved){
-		writer->drawOnMap(runner->getShortestPath(), showCornersinPink);
-		writer->encodeOneStep();
+    
+    if(solved){
+        writer->drawOnMap(runner->getShortestPath(), showCornersinPink);
+        writer->encodeOneStep();
         
         if(runner->getShortestPath()->distance < 1059.89){
             cout << "Good job, minimum solution found." << endl;
@@ -146,8 +146,8 @@ int main(int numFiles, char** files)
             cout << "Go find it" << endl;
             cout << "Minimum solution not found." << endl;
         }
-	}
+    }
     
 
-	return 0;
+    return 0;
 }

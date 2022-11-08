@@ -9,12 +9,9 @@
 #ifndef Line_hpp
 #define Line_hpp
 
-#include <stdio.h>
-#include <cmath>
 #include <iostream>
-#include <vector>
+#include "vector.h"
 
-using std::vector;
 using std::cout;
 using std::endl;
 

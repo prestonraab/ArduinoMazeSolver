@@ -9,9 +9,6 @@
 #ifndef Path_hpp
 #define Path_hpp
 
-#include <stdio.h>
-#include <unordered_set>
-#include <cmath>
 #include <iostream>
 #include "MajorBlock.h"
 #include "Line.hpp"

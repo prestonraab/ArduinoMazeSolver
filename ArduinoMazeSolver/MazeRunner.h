@@ -3,25 +3,14 @@
 #define MAZERUNNER_H
 
 #include<iostream> 
-#include<vector> 
+#include "vector.h"
 #include<string>
-#include<iomanip>
-#include<cmath>
-#include<algorithm>
 #include "Maze.h"
 #include "Line.hpp"
 #include "MajorBlock.h"
 #include "Path.hpp"
-#include "Campus.h"
 #include "Writer.h"
-#include "lodepng.h"
-#include <algorithm>
 
-#include <limits>
-
-//#include "Disp.h"
-
-using namespace std;
 
 static unsigned char black = 0x00;
 static unsigned char white = 0xFF;
@@ -64,19 +53,6 @@ private:
 public:
 	vector<MajorBlock*> allBlocks;
 	
-	MazeRunner(Campus& campus): map(campus.getMap()),
-									height((unsigned)map.size()),
-									width((unsigned)map[0].size()),
-									start(Corner(campus.start[0], campus.start[1], Corner::ALL)),
-									shortPath(NULL),
-									finish(Corner(campus.end[0], campus.end[1], Corner::ALL)),
-									mfinish(finish),
-									likelyMap(map)
-	{
-        Path::magnitude = log2(long(height) * width) + 2;
-		cout << "Found: " << campus.found << endl;
-	}
-	
 	MazeRunner(vector<vector<bool> > map, vector<int> startPos, vector<int> endPos):
 									map(map),
 									height((unsigned)map.size()),
@@ -90,7 +66,8 @@ public:
         Path::magnitude = log2(long(height) * width) + 2;
 		//print(map);
 
-		allCorners = { start,finish };
+		allCorners.push_back(start);
+        allCorners.push_back(finish);
 	}
     
     void orderConnections(vector<MajorBlock*>& blocks);
@@ -153,7 +130,8 @@ public:
             cout << "Start block has no connections, check output image \n";
             return 0;
         }
-        cout << "Start block first connection: (" << MajorBlock::startBlockPtr->getConnectionAt(0)->i << ", " << MajorBlock::startBlockPtr->getConnectionAt(0)->j << ")" << endl;
+        auto startBlockFirstConnection = MajorBlock::startBlockPtr->connections->getLeftmost();
+        cout << "Start block first connection: (" << startBlockFirstConnection->i << ", " << startBlockFirstConnection->j << ")" << endl;
         
         cout << "Theoretical min distance: " << startBlock->getDistanceFromEnd() << endl;
         cout << "Finding First Path" << endl;
@@ -161,7 +139,7 @@ public:
         Path* trod = new Path(startBlock);
         
         while(trod->data->getDistanceFromEnd() > 1){
-            trod = trod->add(trod->data->getConnectionAt(0));
+            trod = trod->add(trod->data->connections->getLeftmost());
             cout << " Distance from End" << trod->data->getDistanceFromEnd() << endl;
         }
         
@@ -251,12 +229,12 @@ public:
 					else if (i == finish.i && j == finish.j)
 						cout << "FF";
 					else {
-						cout << fixed << setw(2) << pathCount % 100;
+						cout << pathCount % 100;
 					}
 					pathCount++;
 				}
 				else if (isInCorners) {
-					std::cout << setw(2) << size;
+					std::cout << size;
 				}
 				else if (map[i][j]) {
 					std::cout << "XX";//char(219) << char(219);

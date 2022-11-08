@@ -185,14 +185,12 @@ void MazeRunner::reduceConnections(vector<MajorBlock*>& blocks) {
 		
 		vector<MajorBlock*> newConnections;
 		
-		for (size_t y = 0; y < m->getConnectionsSize(); ++y) {
-			MajorBlock* const& t = m->getConnectionAt(y);
+        
+        for (AVL::iterator startIt = m->connections->begin(); !startIt.isEnd(); startIt.next()) {
+            MajorBlock* const& t = **startIt.current();
 			
 			if (canSee(m, t)) {
-                if(!binary_search(t->connections.begin(), t->connections.end(), m, comp)){
-                    vector<MajorBlock*>::iterator foundBlock = lower_bound(t->connections.begin(), t->connections.end(), m, comp);
-                    t->connections.insert(foundBlock, m);
-                }
+                t->connections->add(m);
 				newConnections.push_back(t);
                 //cout << "yes: (" << m->i << "," << m->j << ") (" << t->i << "," << t->j << ")" << endl;
 			}
@@ -341,9 +339,9 @@ void MazeRunner::orderConnections(vector<MajorBlock*>& blocks){
     do{
         numChangesMade = 0;
         for(MajorBlock*& block : blocks){
-            for(int c = 0; c < block->getConnectionsSize(); ++c){
+            for(AVL::iterator startIt = block->connections->begin(); !startIt.isEnd(); startIt.next()){
                 
-                MajorBlock* const& connection = block->getConnectionAt(c);
+                MajorBlock* const& connection = **startIt.current();
                 
                 ///This provides essential checking that the each block is doubly connected. Run this after any changes to a block's connections.
 //                bool blockInConnection = false;
@@ -399,8 +397,6 @@ void MazeRunner::orderConnections(vector<MajorBlock*>& blocks){
     }while(numChangesMade > 0);
     
     for(MajorBlock*& block : blocks){
-        MajorBlock::MajorBlockDistanceComparator comp(block);
-        sort(block->connections.begin(), block->connections.end(), comp);
-        
+        block->connections->resort();
     }
 }

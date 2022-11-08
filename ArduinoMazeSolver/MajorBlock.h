@@ -10,63 +10,143 @@
 #define MajorBlock_h
 
 #include "Corner.h"
-#include <vector>
-#include <iostream>
-#include <iomanip>
-#include <algorithm>
-#include <cmath>
+#include "vector.h"
+#include "AVL.h"
 
-using std::vector;
+
+#ifndef AVL_h
+#define AVL_h
+#include "MajorBlock.h"
+#include "Node.h"
+#include "Stack.h"
+
+class MajorBlock;
+
+class AVL{
+public:
+    Node* root;
+    int mySize;
+
+    AVL();
+    ~AVL();
+    
+    class iterator{
+        stack<Node*> pile;
+    public:
+        iterator(Node* my_root){
+            Node* current = my_root;
+            while(current != nullptr){
+                pile.push(current);
+                current = current->left;
+            }
+        }
+        
+        Node* current(){
+            return pile.top();
+        }
+        
+        void next(){
+            Node* curr = pile.top()->right;
+            pile.pop();
+            while(curr != NULL){
+                pile.push(curr);
+                curr = curr->left;
+            }
+        }
+        
+        bool isEnd(){
+            return pile.size() != 0;
+        }
+    };
+    
+    iterator begin();
+    
+    
+    /*
+    * Returns the root node for this tree
+    *
+    * @return the root node for this tree.
+    */
+    Node* getRootNode() const;
+    
+    size_t size() const;
+
+
+    /*
+    * Attempts to add the given int to the AVL tree
+    * Rebalances the tree if data is successfully added
+    *
+    * @return true if added
+    * @return false if unsuccessful (i.e. the int is already in tree)
+    */
+    bool add(MajorBlock* data);
+
+    /*
+    * Attempts to remove the given int from the AVL tree
+    * Rebalances the tree if data is successfully removed
+    *
+    * @return true if successfully removed
+    * @return false if remove is unsuccessful(i.e. the int is not in the tree)
+    */
+    bool remove(MajorBlock* data);
+    
+    
+
+    void rotate_right(Node*& local_root);
+
+    void rotate_left(Node*& local_root);
+
+
+    void restoreBalance(Node*& n);
+
+    Node* find(Node* local_root, int data);
+    
+    Node* find(int data);
+
+    bool edit(Node*& n, MajorBlock* data, bool insert);
+
+    void RKO(Node*& n, MajorBlock* data);
+
+    void sniperAttack(Node* local_root, Node*& rightmost, MajorBlock* data);
+
+    /*
+    * Removes all nodes from the tree, resulting in an empty tree.
+    */
+    void clear();
+    
+};
+
+
+
+#endif /* AVL_h */
+
+
 using std::cout;
 using std::endl;
 
+class AVL;
 
-class MajorBlock {
+class MajorBlock: public HasLocale {
 private:
     double distanceFromEnd;
     
 public:
-    vector<MajorBlock*> connections = {};
+    AVL* connections;
     MajorBlock* shorterConnection;
 	int i;
 	int j;
-    long locale;
+    int locale;
     int popularity;
     
-    vector<Corner> associatedCorners = {};
+    
+    
+    vector<Corner> associatedCorners;
 
     typedef vector<MajorBlock*>::iterator MBIterator;
 
-	MajorBlock(Corner const &c) : popularity(0), distanceFromEnd(-1) {
-        switch(c.d){
-        case Corner::TL:
-        case Corner::ALL:
-            i = c.i;
-            j = c.j;
-            break;
-        case Corner::TR:
-            i = c.i;
-            j = c.j + 1;
-            break;
-        case Corner::BL:
-            i = c.i + 1;
-            j = c.j;
-            break;
-        case Corner::BR:
-            i = c.i + 1;
-            j = c.j + 1;
-            break;
-        }
-        if(i > 3000){
-            ;
-        }
-        locale = long(i * mapWidth) + j;
-        associatedCorners.push_back(c);
-	}
+    MajorBlock(Corner const &c);
     
-    void addAssociatedCorner(Corner const &c){
-        associatedCorners.push_back(c);
-    }
+    void addAssociatedCorner(Corner const &c);
     
     // We ask the question, is m1 < m2 with respect to the reference block
     struct MajorBlockDistanceComparator {
@@ -108,92 +188,71 @@ public:
         }
     };
     
-    void addConnection(MajorBlock* const &m){
-        connections.push_back(m);
-    }
+    void addConnection(MajorBlock* const &m);
     
-    bool isConnectedToEnd(){
-        return distanceFromEnd > -0.5;
-    }
+    bool isConnectedToEnd();
     
-    double getDistance(const MajorBlock* const &other) const{
-        return std::sqrt(double(pow(double(other->i - i), 2)) + double(pow(double(other->j - j), 2)));
-    }
+    double getDistance(const MajorBlock* const &other) const;
     
-    size_t getConnectionsSize() const{
-        return connections.size();
-    }
+    size_t getConnectionsSize() const;
     
-    double getDistanceFromEnd() const{
-        return distanceFromEnd;
-    }
+    double getDistanceFromEnd() const;
     
-    void setDistanceFromEnd(double distance){
-        distanceFromEnd = distance;
-    }
+    void setDistanceFromEnd(double distance);
     
-    MajorBlock* const& getConnectionAt(size_t i) const{
-        return connections.at(i);
-    }
+    void clearConnections();
     
-    void clearConnections(){
-        connections.clear();
-    }
-    
-    void replaceConnections(vector<MajorBlock*> &otherConnections){
-        connections.clear();
-        for(MajorBlock* connection : otherConnections){
-            addConnection(connection);
-        }
-    }
+    void replaceConnections(vector<MajorBlock*> &otherConnections);
     
     static MajorBlock* startBlockPtr;
     static MajorBlock* endBlockPtr;
     static long mapWidth;
 	
-	static vector<MajorBlock*> findMajorBlocks(vector<Corner> &corners, Corner &start, MajorBlock &finish) {
+    
+    static vector<MajorBlock*> findMajorBlocks(vector<Corner> &corners, Corner &start, MajorBlock &finish) {
         static MajorBlockPointerLocationComparator comp;
-		vector<MajorBlock*> blocks;
-		startBlockPtr = new MajorBlock(start);
+        AVL blocks;
+        vector<MajorBlock*> vectorBlocks;
+        startBlockPtr = new MajorBlock(start);
         endBlockPtr = new MajorBlock(finish);
-        blocks.push_back(startBlockPtr);
-        blocks.insert(lower_bound(blocks.begin(), blocks.end(), endBlockPtr, comp), endBlockPtr);
+        blocks.add(startBlockPtr);
+        blocks.add(endBlockPtr);
+        vectorBlocks.push_back(startBlockPtr);
+        vectorBlocks.push_back(endBlockPtr);
         
-		startBlockPtr->connections.push_back(endBlockPtr);
+        startBlockPtr->connections->add(endBlockPtr);
 
-		unsigned long size = corners.size();
-		unsigned percentile = (unsigned)size / 50 + 1;
+        unsigned long size = corners.size();
+        unsigned percentile = (unsigned)size / 50 + 1;
 
-		for (size_t i = 0; i < size; ++i) {  //Loop through all corners
+        for (size_t i = 0; i < size; ++i) {  //Loop through all corners
             MajorBlock* m = new MajorBlock(corners[i]); //Create a major block for each one
-            MBIterator find = getBlock(blocks, m);
-            if(binary_search(blocks.begin(), blocks.end(), m, comp)){  //Search for an equivalent block
-                (*find)->addAssociatedCorner(corners[i]);  //If found, add this corner to that block.
-                cout << "Assos corners size: " << (*find)->associatedCorners.size() << endl;
+            auto find = blocks.find(m->locale);
+            if(find != nullptr){  //Search for an equivalent block
+                (*find).getData()->addAssociatedCorner(corners[i]);  //If found, add this corner to that block.
+                cout << "Assos corners size: " << (*find).getData()->associatedCorners.size() << endl;
                 delete m;
             }
             else{ //If not found
                 startBlockPtr->addConnection(m);
-                m->connections.push_back(endBlockPtr);
-                blocks.insert(find, m); //Add this new block to blocks
+                m->connections->add(endBlockPtr);
+                blocks.add(m); //Add this new block to blocks
+                vectorBlocks.push_back(m);
             }
-		}
-		for (size_t i = 0; i < blocks.size(); ++i) { //Loop through all our new blocks
-			MajorBlock*& m = blocks.at(i);
-			formInitialConnections(blocks, m, corners);
-            sort(m->connections.begin(), m->connections.end());
+        }
+        
+        for (AVL::iterator startIt = blocks.begin(); !startIt.isEnd(); startIt.next()) { //Loop through all our new blocks
+            MajorBlock* m = **startIt.current();
+            formInitialConnections(blocks, m, corners);
+            //std::sort(m->connections.begin(), m->connections.end());
+        }
+        return vectorBlocks;
+    }
 
-			if (i % percentile == 0){
-				cout << std::fixed << std::setprecision(2) << i * 100.0 / size << "%" << endl;
-			}
-		}
-		return blocks;
-	}
-	
-    
-    
-	static void formInitialConnections(vector<MajorBlock*> &allBlocks, MajorBlock* &m, vector<Corner> const &corners)
-	{
+
+
+    static void formInitialConnections(AVL &allBlocks, MajorBlock* &m, vector<Corner> const &corners)
+    {
         for(Corner associatedCorner : m->associatedCorners){ //Loop through each corner of the block (1 or 2)
             if(m->associatedCorners.size() != 1){
                 cout << m->associatedCorners.size() << endl;
@@ -203,36 +262,18 @@ public:
             {
                 if(associatedCorner.isPossibleConnection(c)){
                     MajorBlock connectBlock = MajorBlock(c);
-                    MBIterator location = getBlock(allBlocks, connectBlock);
-                    m->addConnection(*location);
+                    auto location = allBlocks.find(connectBlock.locale);
+                    m->addConnection(**location);
                 }
             }
         }
-	}
-	
-	
-	static MBIterator getBlock(vector<MajorBlock*> &blocks, MajorBlock*& m) {
-        static MajorBlockPointerLocationComparator comp;
-        return lower_bound(blocks.begin(), blocks.end(), m, comp);
-	}
-    
-    static MBIterator getBlock(vector<MajorBlock*> &blocks, MajorBlock& m) {
-        static MajorBlockLocationComparator comp;
-        return lower_bound(blocks.begin(), blocks.end(), m, comp);
     }
 
-	bool operator==(MajorBlock& other) const {
-		return other.i == i && other.j == j;
-	}
-	bool operator<(MajorBlock& other) const {
-		return other.i < i || (other.i == i && other.j < j);
-	}
-	bool operator<(const MajorBlock& other) const {
-		return other.i < i || (other.i == i && other.j < j);
-	}
-    std::string toString() const{
-        return "(" + std::to_string(i) + ", " + std::to_string(j) + ")";
-    }
+    bool operator==(MajorBlock& other) const;
+    bool operator<(MajorBlock& other) const;
+    bool operator<(const MajorBlock& other) const;
+    std::string toString() const;
+    
     friend std::ostream& operator<<(std::ostream &o, const MajorBlock &m){
         o << m.toString();
         return o;

@@ -9,12 +9,9 @@
 #ifndef Corner_h
 #define Corner_h
 
-#include <vector>
+#include "vector.h"
 #include <iostream>
 
-using std::vector;
-
-using std::vector;
 using std::cout;
 using std::endl;
 
@@ -71,7 +68,7 @@ struct Corner {
     }
     
     
-	Corner(int y, int x, direction dir): i(y), j(x), d(dir) {
+	Corner(int y=0, int x=0, direction dir=ALL): i(y), j(x), d(dir) {
 	}
 	
     static void setSearchRange(double range) {

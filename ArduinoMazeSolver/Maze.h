@@ -34,10 +34,9 @@
 
 
 #include <cctype>
-#include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <vector>
+#include "vector.h"
 #include <time.h>
 
 class Maze
@@ -47,15 +46,15 @@ class Maze
 	int start_axis;
 	int start_side;
 
-	std::vector< std::vector< int > > dfs_path;
+	vector< vector< int > > dfs_path;
 
 	/*
 	 * Structure of the maze vector:
 	 *                     |--> Filled in?
-	 *   Row --> Collumn --|
+	 *   Row --> Column --|
 	 *                     |--> Has been visited?
 	 */
-	std::vector< std::vector< std::vector< bool > > > maze;
+	vector< vector< vector< bool > > > maze;
 
 	public:
 	Maze(int height, int width) {
@@ -85,7 +84,7 @@ class Maze
 	// Select a random direction based on our options, append it to the current path, and move there
 	bool randomMove(bool first_move) {
 		int random_neighbor;
-		std::vector< std::vector< int > > unvisited_neighbors;
+		vector< vector< int > > unvisited_neighbors;
 
 		for (int direction = 0; direction < 4; direction++) {
 			int possible_pmd[2] = { 0, 0 };
@@ -109,7 +108,9 @@ class Maze
 				dfs_path.back()[1] + possible_pmd[1] * 2 < maze_size[1] - 1) {
 				if (!maze[dfs_path.back()[1] + possible_pmd[1] * 2]
 					[dfs_path.back()[0] + possible_pmd[0] * 2][1]) {
-					std::vector< int > possible_move_delta = { possible_pmd[0], possible_pmd[1] };
+                    vector< int > possible_move_delta;
+                    possible_move_delta.push_back(possible_pmd[0]);
+                    possible_move_delta.push_back(possible_pmd[1]);
 
 					unvisited_neighbors.push_back(possible_move_delta);
 				}
@@ -120,7 +121,7 @@ class Maze
 			random_neighbor = rand() % unvisited_neighbors.size();
 
 			for (int a = 0; a < !first_move + 1; a++) {
-				std::vector< int > new_location;
+				vector< int > new_location;
 
 				new_location.push_back(dfs_path.back()[0] + unvisited_neighbors[random_neighbor][0]);
 				new_location.push_back(dfs_path.back()[1] + unvisited_neighbors[random_neighbor][1]);
@@ -139,7 +140,7 @@ class Maze
 	}
 
 	bool validInteger(char* cstr) {
-		std::string str(cstr);
+        std::string str(cstr);
 
 		for (char& c : str) {
 			if (!isdigit(c)) {
@@ -192,16 +193,24 @@ class Maze
 					is_border = false;
 				}
 
-				std::vector< bool > new_cell = { true, is_border };
+                vector< bool > new_cell;
+                
+                new_cell.push_back(true);
+                new_cell.push_back(is_border);
+                
+                vector< vector<bool> > new_row;
+                new_row.push_back(new_cell);
 
-				if ((unsigned int)a + 1 > maze.size()) {
-					std::vector< std::vector< bool > > new_row = { new_cell };
 
-					maze.push_back(new_row);
-				}
-				else {
-					maze[a].push_back(new_cell);
-				}
+//				if ((unsigned int)a + 1 > maze.size()) {
+//                    vector< vector<bool> > new_row;
+//                    new_row.push_back(new_cell);
+//
+//					maze.push_back(new_row);
+//				}
+//				else {
+//					maze[a].push_back(new_cell);
+//				}
 			}
 		}
 	}
@@ -219,7 +228,7 @@ class Maze
 					processing_number = -1;
 				}
 				else {
-					std::cerr << "'" << argv[arg] << "'" << " is not a valid integer." << std::endl;
+                    std::cerr << "'" << argv[arg] << "'" << " is not a valid integer." << std::endl;
 					exit(1);
 				}
 			}
@@ -233,14 +242,14 @@ class Maze
 					height_found = true;
 				}
 				else {
-					std::cerr << "'" << argv[arg] << "'" << " is not a valid argument." << std::endl;
+                    std::cerr << "'" << argv[arg] << "'" << " is not a valid argument." << std::endl;
 					exit(1);
 				}
 			}
 		}
 
 		if (!width_found || !height_found) {
-			std::cerr << "You must specify the width and height with '-w' and '-h'" << std::endl;
+            std::cerr << "You must specify the width and height with '-w' and '-h'" << std::endl;
 			exit(1);
 		}
 	}
@@ -249,22 +258,26 @@ class Maze
 		for (unsigned int a = 0; a < maze.size(); a++) {
 			for (unsigned int b = 0; b < maze[a].size(); b++) {
 				if (maze[a][b][0]) {
-					std::cout << "X";//(unsigned char)(219);
+                    std::cout << "X";//(unsigned char)(219);
 				}
 				else {
-					std::cout << "  ";
+                    std::cout << "  ";
 				}
 			}
 
-			std::cout << std::endl;
+            std::cout << std::endl;
 		}
 	}
 
-	std::vector< std::vector< bool > > getMap() {
+	vector< vector< bool > > getMap() {
 		long height = maze.size();
 		long width = maze[0].size();
-		std::vector<std::vector<bool>> map(height, std::vector<bool>(width, false));
+        vector<vector<bool>> map;
+        map.resize(height);
 		for (unsigned int a = 0; a < maze.size(); a++) {
+            vector<bool> new_row;
+            new_row.resize(width);
+            map.push_back(new_row);
 			for (unsigned int b = 0; b < maze[a].size(); b++) {
 				map[a][b] = maze[a][b][0];
 			}
@@ -272,9 +285,13 @@ class Maze
 		return map;
 	}
 	
-	std::vector< std::vector< int > > getStartEnd(){
-		std::vector<int> start = {0,0};
-		std::vector<int> end = {0,0};
+	vector< vector< int > > getStartEnd(){
+        vector<int> start;
+        start.push_back(0);
+        start.push_back(0);
+        vector<int> end;
+        end.push_back(0);
+        end.push_back(0);
 		
 		
 		for (unsigned int a = 0; a < maze.size(); a++) {
@@ -299,7 +316,9 @@ class Maze
 		}
         maze[start[0]][start[1]][0]=true;
         maze[end[0]][end[1]][0]=true;
-		std::vector<std::vector<int>> toReturn = {start, end};
+        vector<vector<int>> toReturn;
+        toReturn.push_back(start);
+        toReturn.push_back(end);
 		return toReturn;
 	}
 
@@ -329,7 +348,9 @@ class Maze
 			}
 		}
 
-		std::vector< int > location = { 0, 0 };
+        vector< int > location;
+        location.push_back(0);
+        location.push_back(0);
 
 		if (!side) {
 			location[!axis] = 0;
